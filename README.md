@@ -1,8 +1,5 @@
 # VerifyInboxes command-line tool
 
-> **Not released yet.** The first release (0.1.0) is on its way; until then, build it from this repository with Go
-> 1.26 or later (`go build ./cmd/verifyinboxes`). The install commands below work from the first release on.
-
 `verifyinboxes` checks email addresses with [VerifyInboxes](https://verifyinboxes.com) from a terminal or a script:
 one address, a few, or a whole CSV. It also gives AI apps the VerifyInboxes MCP server over stdio.
 
@@ -34,10 +31,18 @@ in `/usr/local/bin` (when you can write there) or `~/.local/bin`. It reads:
 | `VERIFYINBOXES_REPO` | the GitHub repository of the releases (default `verifyinboxes/verifyinboxes-cli`) |
 | `VERIFYINBOXES_DOWNLOAD_BASE` | where the release files are, instead of GitHub (needs `VERIFYINBOXES_VERSION`) |
 
-On Windows, download `verifyinboxes_<version>_windows_amd64.zip` (or `_arm64`) from the
-[releases](https://github.com/verifyinboxes/verifyinboxes-cli/releases) and put `verifyinboxes.exe` on your `PATH`.
-Each release lists the archives for Linux, macOS and Windows on amd64 and arm64, and their SHA-256 checksums in
-`checksums.txt`.
+With [Homebrew](https://brew.sh), on macOS or Linux:
+
+```sh
+brew install verifyinboxes/tap/verifyinboxes
+```
+
+and `brew upgrade verifyinboxes` for a newer release.
+
+Or download it from the [releases](https://github.com/verifyinboxes/verifyinboxes-cli/releases) page. Each release
+lists the archives for Linux, macOS and Windows on amd64 and arm64, and their SHA-256 checksums in `checksums.txt`.
+On Windows, download `verifyinboxes_<version>_windows_amd64.zip` (or `_arm64`) and put `verifyinboxes.exe` on your
+`PATH`.
 
 With Go 1.26 or later you can also run `go install github.com/verifyinboxes/verifyinboxes-cli/cmd/verifyinboxes@latest`.
 

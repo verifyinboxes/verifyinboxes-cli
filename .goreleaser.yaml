@@ -1,0 +1,102 @@
+# GoReleaser configuration for the verifyinboxes command-line tool.
+#
+#   goreleaser check                       # validate this file
+#   goreleaser build --snapshot --clean    # cross-compile into dist/, no release
+#   goreleaser release --clean             # on a tag vX.Y.Z, with GITHUB_TOKEN set: build, archive, checksum, release
+#
+# .github/workflows/release.yml runs the last one when a tag vX.Y.Z is pushed. The release is created as a draft:
+# look its files over, then publish it (`gh release edit vX.Y.Z --draft=false`). install.sh sees it once published.
+version: 2
+
+project_name: verifyinboxes
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: verifyinboxes
+    main: ./cmd/verifyinboxes
+    binary: verifyinboxes
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }} -X main.commit={{ .ShortCommit }} -X main.date={{ .CommitDate }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: verifyinboxes
+    # verifyinboxes_0.1.0_linux_amd64.tar.gz — install.sh builds the same name.
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  draft: true
+  prerelease: auto
+  github:
+    owner: verifyinboxes
+    name: verifyinboxes-cli
+
+# Homebrew. Not set up yet. It needs two things, then this section can be uncommented:
+#   1. a public repository github.com/verifyinboxes/homebrew-tap (GoReleaser writes the cask into it);
+#   2. a token that can push to that repository, as the secret HOMEBREW_TAP_GITHUB_TOKEN of this repository. The
+#      GoReleaser step of .github/workflows/release.yml already passes it as the environment variable of that name
+#      (the workflow's own GITHUB_TOKEN cannot push to another repository); while the secret is not set it is empty,
+#      and nothing reads it as long as this section stays commented out.
+# People then install with:
+#
+#   brew install verifyinboxes/tap/verifyinboxes
+#
+# homebrew_casks:
+#   - name: verifyinboxes
+#     binaries:
+#       - verifyinboxes
+#     homepage: https://verifyinboxes.com
+#     description: Check email addresses with VerifyInboxes from the command line
+#     repository:
+#       owner: verifyinboxes
+#       name: homebrew-tap
+#       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+#     commit_author:
+#       name: VerifyInboxes
+#       email: developers@verifyinboxes.com
+#     # The binary is not notarised: without this macOS quarantines it on first run.
+#     hooks:
+#       post:
+#         install: |
+#           if OS.mac?
+#             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/verifyinboxes"]
+#           end

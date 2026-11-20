@@ -1,0 +1,8 @@
+# GoReleaser's output and locally built binaries
+/dist/
+/verifyinboxes
+/verifyinboxes.exe
+# Test binaries and profiles
+*.test
+*.out
+*.prof
